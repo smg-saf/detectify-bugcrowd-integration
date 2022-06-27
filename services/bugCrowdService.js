@@ -11,17 +11,28 @@ module.exports.createSubmission = async (findings) => {
   // bounty_uuid 357a81ca-92b7-4b60-9548-5a64533c5cca
   // to get this uuid you should run first (GET) https://api.bugcrowd.com/bounties route
   try {
-    const path = `/bounties/${process.env.BOUNTY_UUID}/submissions`;
+    const path = "/submissions";
     const url = `${BugCrowdEndpoint}${path}`;
     const body = {
-      submission: {
-        title: findings.title,
-        bug_url: findings.found_at,
-        description_markdown: findings.definition.description,
-        priority: scoreCalculation(findings.score[0].score),
-        substate: 'unresolved',
-        extra_info_markdown: findings.definition.risk,
-        researcher_email: 'security@tx.group',
+      data: {
+        type: "submission",
+        attributes: {
+          title: findings.title,
+          bug_url: findings.found_at,
+          description: findings.definition.description,
+          severity: scoreCalculation(findings.score[0].score),
+          state: 'unresolved',
+          extra_info: findings.definition.risk,
+          researcher_email: 'security@swissmarketplace.group',
+        },
+        relationships: {
+            program: {
+                data: {
+                    type: "program",
+                    id: `${process.env.BOUNTY_UUID}`
+                }
+            }
+        }
       },
     };
     const res = await fetch(url, {
@@ -37,7 +48,7 @@ module.exports.createSubmission = async (findings) => {
 };
 
 module.exports.getBounties = async () => {
-  const path = '/bounties';
+  const path = '/submissions';
   const url = `${BugCrowdEndpoint}${path}`;
   try {
     const res = await fetch(url, {
